@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>As Crônicas do Vale Sombrio - Aventura Interativa</title>
+    <!-- Carregando Tailwind CSS para layout responsivo e utilitários -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fontes temáticas: Cinzel para títulos épicos e Inter para leitura confortável -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilos personalizados para atmosfera, animações e tipografia */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #07090e;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .font-epic {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Fundo atmosférico com gradientes radiais profundos */
+        .bg-mystic {
+            background: radial-gradient(circle at 50% 30%, #162238 0%, #0a0e17 55%, #040609 100%);
+        }
+
+        /* Brilho sutil e animado no título principal */
+        .title-glow {
+            text-shadow: 0 0 25px rgba(245, 158, 11, 0.35), 0 0 60px rgba(217, 119, 6, 0.2);
+            animation: pulseGlow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                text-shadow: 0 0 20px rgba(245, 158, 11, 0.3), 0 0 45px rgba(217, 119, 6, 0.15);
+            }
+            100% {
+                text-shadow: 0 0 35px rgba(251, 191, 36, 0.6), 0 0 75px rgba(245, 158, 11, 0.35);
+            }
+        }
+
+        /* Efeito de brilho e elevação no botão Iniciar */
+        .btn-start {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            box-shadow: 0 0 25px rgba(217, 119, 6, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-start::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 40%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.25);
+            transform: rotate(25deg);
+            transition: all 0.6s ease;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 10px 35px rgba(245, 158, 11, 0.65), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .btn-start:hover::after {
+            left: 130%;
+        }
+
+        .btn-start:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Animação de entrada e saída entre telas */
+        .screen-transition {
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .screen-hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.97) translateY(10px);
+        }
+
+        .screen-visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+        }
+
+        /* Estilização dos botões de escolha da história */
+        .choice-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            backdrop-filter: blur(8px);
+            transition: all 0.25s ease;
+        }
+
+        .choice-card:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(245, 158, 11, 0.6);
+            transform: translateX(6px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Animação suave para o texto do capítulo */
+        @keyframes fadeInText {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-chapter {
+            animation: fadeInText 0.6s ease-out forwards;
+        }
+
+        /* Canvas de partículas em segundo plano */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-mystic min-h-screen flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200">
+
+    <!-- Canvas para efeito atmosférico de partículas flutuantes (brasas/vagalumes mágicos) -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- ===================================================================== -->
+    <!-- TELA 1: CAPA INICIAL PERSONALIZADA (Primeira visão do visitante)      -->
+    <!-- ===================================================================== -->
+    <main id="cover-screen" class="screen-transition screen-visible relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 text-center min-h-screen">
+        
+        <!-- Emblema / Ornamento superior SVG -->
+        <div class="mb-6 p-4 rounded-full bg-amber-500/10 border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+            <svg class="w-12 h-12 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                <circle cx="12" cy="12" r="3" class="text-amber-200" />
+            </svg>
+        </div>
+
+        <!-- Rótulo de gênero -->
+        <span class="uppercase tracking-[0.35em] text-xs sm:text-sm text-amber-400/90 font-semibold mb-4">
+            Aventura Interativa de Fantasia
+        </span>
+
+        <!-- Título Marcante da Aventura -->
+        <h1 class="font-epic title-glow text-4xl sm:text-6xl md:text-7xl font-black text-slate-100 tracking-wide max-w-4xl leading-tight mb-6">
+            As Crônicas do <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500">Vale Sombrio</span>
+        </h1>
+
+        <!-- Linha divisória ornamental -->
+        <div class="w-40 h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent mb-6"></div>
+
+        <!-- Frase de introdução / subtítulo -->
+        <p class="text-slate-300 text-base sm:text-lg md:text-xl max-w-2xl leading-relaxed font-light mb-10">
+            Onde a névoa antiga esconde segredos esquecidos e cada escolha molda o destino do último guardião. Você tem coragem para cruzar os portões?
+        </p>
+
+        <!-- Botão Bem Destacado "Iniciar" -->
+        <button id="start-btn" class="btn-start cursor-pointer px-10 py-4 sm:px-12 sm:py-5 rounded-xl font-epic font-bold text-lg sm:text-xl tracking-widest uppercase text-white flex items-center gap-3">
+            <span>Iniciar Aventura</span>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+        </button>
+
+        <!-- Dica discreta no rodapé da capa -->
+        <p class="mt-12 text-xs text-slate-500 tracking-wider uppercase">
+            Use fones de ouvido ou leia com atenção • Suas escolhas importam
+        </p>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- TELA 2: JOGO / HISTÓRIA INTERATIVA (Exibida após clicar em Iniciar)   -->
+    <!-- ===================================================================== -->
+    <section id="game-screen" class="screen-transition screen-hidden hidden relative z-10 flex-1 flex flex-col justify-between max-w-4xl w-full mx-auto px-5 sm:px-8 py-6 sm:py-10 min-h-screen">
+        
+        <!-- Cabeçalho discreto com título e botão para voltar à tela inicial -->
+        <header class="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-6">
+            <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span class="font-epic text-sm sm:text-base text-slate-300 tracking-wider">As Crônicas do Vale Sombrio</span>
+            </div>
+
+            <!-- Botão discreto para voltar à capa -->
+            <button id="back-to-cover-btn" class="cursor-pointer text-xs sm:text-sm text-slate-400 hover:text-amber-300 bg-slate-900/70 hover:bg-slate-800/90 border border-slate-700/60 hover:border-amber-500/40 px-3.5 py-2 rounded-lg transition-all flex items-center gap-1.5" title="Voltar à tela inicial">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>Tela Inicial</span>
+            </button>
+        </header>
+
+        <!-- Área Principal da Narrativa -->
+        <div id="story-container" class="flex-1 flex flex-col justify-center my-auto py-4">
+            <!-- Cartão de História -->
+            <article class="bg-slate-900/65 border border-slate-800/90 backdrop-blur-md rounded-2xl p-6 sm:p-10 shadow-2xl">
+                <!-- Indicador de Capítulo / Local -->
+                <div class="flex items-center justify-between mb-4">
+                    <span id="chapter-badge" class="text-xs font-semibold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+                        Capítulo I
+                    </span>
+                    <span id="location-tag" class="text-xs text-slate-400 italic">
+                        Portões de Eldoria
+                    </span>
+                </div>
+
+                <!-- Título da Cena -->
+                <h2 id="scene-title" class="font-epic text-2xl sm:text-3xl font-bold text-slate-100 mb-5">
+                    O Despertar na Névoa
+                </h2>
+
+                <!-- Texto Narrativo -->
+                <div id="scene-text" class="space-y-4 text-slate-300 text-base sm:text-lg leading-relaxed font-normal mb-8">
+                    <!-- O conteúdo será injetado via JavaScript -->
+                </div>
+
+                <!-- Separador -->
+                <div class="h-px w-full bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6"></div>
+
+                <!-- Opções de Escolha -->
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-3">
+                        O que você decide fazer?
+                    </p>
+                    <div id="choices-container" class="space-y-3">
+                        <!-- Os botões de escolha serão gerados dinamicamente -->
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Rodapé sutil de progresso -->
+        <footer class="mt-6 pt-4 border-t border-slate-800/50 flex justify-between items-center text-xs text-slate-500">
+            <span id="step-counter">Passo 1 da jornada</span>
+            <span>Progresso salvo na sessão atual</span>
+        </footer>
+    </section>
+
+    <script>
+        /**
+         * =====================================================================
+         * 1. SISTEMA DE PARTÍCULAS ATMOSFÉRICAS (Canvas)
+         * Cria brasas douradas e névoa sutil flutuando no fundo da tela.
+         * =====================================================================
+         */
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationFrameId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset(true);
+            }
+
+            reset(initial = false) {
+                this.x = Math.random() * canvas.width;
+                this.y = initial ? Math.random() * canvas.height : canvas.height + 10;
+                this.size = Math.random() * 2.4 + 0.6;
+                this.speedY = -(Math.random() * 0.45 + 0.15);
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.6 + 0.15;
+                this.fadeSpeed = Math.random() * 0.003 + 0.001;
+                // Alterna entre tons dourados/âmbar e azul-celeste etéreo
+                this.isAmber = Math.random() > 0.25;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX + Math.sin(this.y * 0.01) * 0.15;
+                this.opacity -= this.fadeSpeed;
+
+                if (this.y < -10 || this.opacity <= 0) {
+                    this.reset(false);
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                if (this.isAmber) {
+                    ctx.fillStyle = `rgba(251, 191, 36, ${this.opacity})`;
+                    ctx.shadowColor = 'rgba(245, 158, 11, 0.8)';
+                } else {
+                    ctx.fillStyle = `rgba(148, 197, 255, ${this.opacity * 0.7})`;
+                    ctx.shadowColor = 'rgba(96, 165, 250, 0.6)';
+                }
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initParticles() {
+            resizeCanvas();
+            particles = [];
+            const particleCount = Math.min(Math.floor((canvas.width * canvas.height) / 16000), 85);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const p of particles) {
+                p.update();
+                p.draw();
+            }
+            animationFrameId = requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            initParticles();
+        });
+
+        /**
+         * =====================================================================
+         * 2. DADOS DA HISTÓRIA INTERATIVA
+         * Estrutura ramificada para o jogador explorar após clicar em "Iniciar".
+         * =====================================================================
+         */
+        const storyNodes = {
+            inicio: {
+                chapter: "Capítulo I",
+                location: "Os Portões de Obsidiana",
+                title: "O Despertar na Névoa",
+                paragraphs: [
+                    "O vento gelado sopra entre as árvores retorcidas enquanto você observa os antigos Portões de Obsidiana se erguerem diante da neblina espessa. Há séculos ninguém atravessa esta fronteira rumo ao coração do Vale Sombrio.",
+                    "Em sua mão, a velha lanterna de runas começa a pulsar com uma luz âmbar inquieta, reagindo a uma presença antiga que parece observar cada passo seu. À sua frente, dois caminhos se revelam entre as ruínas cobertas de musgo."
+                ],
+                choices: [
+                    {
+                        text: "Seguir pela trilha iluminada pelas runas antigas à esquerda",
+                        next: "trilha_runas"
+                    },
+                    {
+                        text: "Explorar a torre de vigia abandonada à direita antes de avançar",
+                        next: "torre_vigia"
+                    }
+                ]
+            },
+            trilha_runas: {
+                chapter: "Capítulo I • Caminho das Runas",
+                location: "Floresta Sussurrante",
+                title: "Ecos de Pedra e Luz",
+                paragraphs: [
+                    "Ao pisar nas pedras gravadas, cada runa acende sob suas botas com um brilho dourado suave, dissipando a névoa ao redor. Sussurros distantes parecem guiar sua intuição.",
+                    "Logo adiante, você encontra um altar circular onde repousa um mapa estelar parcialmente coberto por raízes prateadas — e o som de passos pesados ecoando atrás das árvores."
+                ],
+                choices: [
+                    {
+                        text: "Pegar o mapa estelar rapidamente e se esconder atrás do altar",
+                        next: "altar_escondido"
+                    },
+                    {
+                        text: "Erguer a lanterna bem alto e encarar quem se aproxima",
+                        next: "encontro_guardiao"
+                    }
+                ]
+            },
+            torre_vigia: {
+                chapter: "Capítulo I • A Torre Antiga",
+                location: "Ruínas da Vigília",
+                title: "O Observatório Esquecido",
+                paragraphs: [
+                    "Você sobe os degraus de pedra desgastados da torre. Lá no alto, o vento uiva, mas a vista revela todo o Vale Sombrio: no centro da floresta, uma cúpula de luz azulada pulsa como um coração adormecido.",
+                    "Sobre uma mesa de carvalho intacta, há um diário encadernado em couro e uma chave de prata com o símbolo de uma coruja."
+                ],
+                choices: [
+                    {
+                        text: "Ler as últimas anotações do diário para descobrir os perigos do vale",
+                        next: "segredo_diario"
+                    },
+                    {
+                        text: "Guardar a chave de prata e descer direto rumo à luz azulada",
+                        next: "encontro_guardiao"
+                    }
+                ]
+            },
+            altar_escondido: {
+                chapter: "Capítulo II • Sombras e Segredos",
+                location: "Santuário Oculto",
+                title: "A Passagem Secreta",
+                paragraphs: [
+                    "Com o mapa estelar em mãos, você se oculta nas sombras do altar. Uma criatura feita de galhos antigos e luz espectral passa lentamente sem notar sua presença, patrulhando a trilha.",
+                    "Observando o mapa à luz da lanterna, você descobre que o próprio altar possui uma passagem subterrânea que leva direto à Câmara do Coração do Vale!"
+                ],
+                choices: [
+                    {
+                        text: "Abrir a passagem secreta e continuar sua jornada (Recomeçar Demo)",
+                        next: "inicio",
+                        isRestart: true
+                    }
+                ]
+            },
+            encontro_guardiao: {
+                chapter: "Capítulo II • O Teste de Coragem",
+                location: "Clareira do Pacto",
+                title: "O Guardião de Cinzas",
+                paragraphs: [
+                    "Das sombras emerge um antigo cavaleiro de armadura coberta por musgo e estrelas. Ao ver a luz sincera da sua lanterna, ele abaixa sua lança e inclina a cabeça em respeito.",
+                    "\"Há eras aguardamos alguém que não temesse a escuridão do vale\", diz sua voz como o eco de trovões distantes. \"O caminho para a Fortaleza Eterna agora está aberto para você.\""
+                ],
+                choices: [
+                    {
+                        text: "Aceitar a bênção do Guardião e reiniciar para explorar outros caminhos",
+                        next: "inicio",
+                        isRestart: true
+                    }
+                ]
+            },
+            segredo_diario: {
+                chapter: "Capítulo II • Sabedoria Antiga",
+                location: "Topo da Torre",
+                title: "As Palavras do Último Escriba",
+                paragraphs: [
+                    "As páginas revelam que a névoa do Vale Sombrio não é uma maldição, mas um escudo criado para proteger a Fonte da Aurora de mãos gananciosas.",
+                    "Com esse conhecimento e a chave de prata em mãos, você agora conhece a verdadeira senha para despertar os portões internos sem despertar os sentinelas de pedra."
+                ],
+                choices: [
+                    {
+                        text: "Descer da torre preparado para o próximo capítulo (Jogar novamente)",
+                        next: "inicio",
+                        isRestart: true
+                    }
+                ]
+            }
+        };
+
+        /**
+         * =====================================================================
+         * 3. CONTROLE DE NAVEGAÇÃO ENTRE CAPA E HISTÓRIA
+         * =====================================================================
+         */
+        const coverScreen = document.getElementById('cover-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const startBtn = document.getElementById('start-btn');
+        const backToCoverBtn = document.getElementById('back-to-cover-btn');
+
+        const chapterBadge = document.getElementById('chapter-badge');
+        const locationTag = document.getElementById('location-tag');
+        const sceneTitle = document.getElementById('scene-title');
+        const sceneText = document.getElementById('scene-text');
+        const choicesContainer = document.getElementById('choices-container');
+        const stepCounter = document.getElementById('step-counter');
+        const storyContainer = document.getElementById('story-container');
+
+        let stepCount = 1;
+
+        // Renderiza um nó específico da história na tela do jogo
+        function renderStoryNode(nodeKey) {
+            const node = storyNodes[nodeKey];
+            if (!node) return;
+
+            // Reinicia animação suave do bloco de história
+            storyContainer.classList.remove('animate-chapter');
+            void storyContainer.offsetWidth; // força reflow
+            storyContainer.classList.add('animate-chapter');
+
+            chapterBadge.textContent = node.chapter;
+            locationTag.textContent = node.location;
+            sceneTitle.textContent = node.title;
+
+            // Renderiza parágrafos
+            sceneText.innerHTML = node.paragraphs
+                .map(p => `<p>${p}</p>`)
+                .join('');
+
+            // Renderiza botões de escolha
+            choicesContainer.innerHTML = '';
+            node.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-card cursor-pointer w-full text-left p-4 rounded-xl flex items-center justify-between gap-4 group';
+                button.innerHTML = `
+                    <div class="flex items-center gap-3.5">
+                        <span class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 font-epic text-xs font-bold flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors">
+                            ${index + 1}
+                        </span>
+                        <span class="text-slate-200 group-hover:text-white text-sm sm:text-base font-medium">
+                            ${choice.text}
+                        </span>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                `;
+
+                button.addEventListener('click', () => {
+                    if (choice.isRestart) {
+                        stepCount = 1;
+                    } else {
+                        stepCount++;
+                    }
+                    stepCounter.textContent = `Passo ${stepCount} da jornada`;
+                    renderStoryNode(choice.next);
+                });
+
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        // Transição suave da Capa -> História
+        function startGame() {
+            stepCount = 1;
+            stepCounter.textContent = `Passo ${stepCount} da jornada`;
+            renderStoryNode('inicio');
+
+            // Inicia fade-out da capa
+            coverScreen.classList.remove('screen-visible');
+            coverScreen.classList.add('screen-hidden');
+
+            setTimeout(() => {
+                coverScreen.classList.add('hidden');
+                gameScreen.classList.remove('hidden');
+                
+                // Pequeno atraso para ativar transição CSS de entrada
+                requestAnimationFrame(() => {
+                    gameScreen.classList.remove('screen-hidden');
+                    gameScreen.classList.add('screen-visible');
+                });
+            }, 600);
+        }
+
+        // Transição suave da História -> Capa Inicial
+        function returnToCover() {
+            gameScreen.classList.remove('screen-visible');
+            gameScreen.classList.add('screen-hidden');
+
+            setTimeout(() => {
+                gameScreen.classList.add('hidden');
+                coverScreen.classList.remove('hidden');
+
+                requestAnimationFrame(() => {
+                    coverScreen.classList.remove('screen-hidden');
+                    coverScreen.classList.add('screen-visible');
+                });
+            }, 600);
+        }
+
+        // Eventos dos botões principais
+        startBtn.addEventListener('click', startGame);
+        backToCoverBtn.addEventListener('click', returnToCover);
+
+        // Inicialização quando a página carregar
+        window.onload = function () {
+            initParticles();
+            animateParticles();
+        };
+    </script>
+</body>
+</html>
